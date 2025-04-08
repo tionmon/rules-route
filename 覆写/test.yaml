@@ -1,0 +1,221 @@
+# https://mihomo.party/docs/guide/override/yaml
+
+proxy-providers:
+  aifun:
+    url: ""
+    type: http
+    interval: 86400
+    health-check: {enable: true,url: "http://www.apple.com/library/test/success.html",interval: 300}
+    # override:
+    #   additional-prefix: "[ProviderAirPort]"
+
+  alphaio:
+    url: ""
+    type: http
+    interval: 86400
+    health-check: {enable: true,url: "http://www.apple.com/library/test/success.html",interval: 300}
+    # override:
+    #   additional-prefix: "[ProviderAirPort]"
+
+  myproxy:
+    url: ""
+    type: http
+    interval: 86400
+    health-check: {enable: true,url: "http://www.apple.com/library/test/success.html",interval: 300}
+    # override:
+    #   additional-prefix: "[ProviderAirPort]"
+
+
+proxy-groups+:
+- name: 香港
+  type: url-test
+  use:
+    - aifun
+    - alphaio
+    - myproxy
+  filter: "(?i)港|hk|hongkong|hong kong"
+  url: 'http://www.apple.com/library/test/success.html'
+  interval: 300
+  tolerance: 50
+  #lazy: true
+
+- name: 台湾
+  type: url-test
+  use:
+    - aifun
+    - alphaio
+    - myproxy
+  filter: "(?i)台|tw|taiwan"
+  url: 'http://www.apple.com/library/test/success.html'
+  interval: 300
+  tolerance: 50
+  #lazy: true
+
+- name: 日本
+  type: url-test
+  use:
+    - aifun
+    - alphaio
+    - myproxy
+  filter: "(?i)日本|jp|japan"
+  url: 'http://www.apple.com/library/test/success.html'
+  interval: 300
+  tolerance: 50
+  #lazy: true
+
+- name: 美国
+  type: select
+  use:
+    - aifun
+    - alphaio
+    - myproxy
+  filter: "(?i)美|us|unitedstates|united states"
+  url: 'http://www.apple.com/library/test/success.html'
+  interval: 300
+  tolerance: 50
+  #lazy: true
+
+- name: 新加坡
+  type: url-test
+  use:
+    - aifun
+    - alphaio
+    - myproxy
+  filter: "(?i)新|sg|singapore"
+  url: 'http://www.apple.com/library/test/success.html'
+  interval: 300
+  tolerance: 50
+  #lazy: true
+
+- name: 家宽
+  type: select
+  use:
+    - aifun
+    - alphaio
+    - myproxy
+  filter: "(?i)美|us|unitedstates|united states|家宽"
+  url: 'http://www.apple.com/library/test/success.html'
+  interval: 300
+  tolerance: 50
+  #lazy: true
+
+- name: 全部节点
+  type: select
+  include-all: true
+
+- name: emby-lx
+  type: select
+  proxies:
+    - DIRECT
+  include-all: true
+
+- name: emby-yezi
+  type: select
+  proxies:
+    - DIRECT
+  include-all: true
+
+- name: emby-pcm
+  type: select
+  proxies:
+    - DIRECT
+  include-all: true
+
+- name: emby-lemby
+  type: select
+  proxies:
+    - DIRECT
+  include-all: true
+
+- name: emby-aikan
+  type: select
+  proxies:
+    - DIRECT
+  include-all: true
+
+rule-providers:
+  # AI 服务
+  category-ai-chat-!cn:
+    type: http
+    format: yaml
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-ai-!cn.yaml
+    path: ./ruleset/category-ai-!cn.yaml
+    interval: 86400
+
+  # 微软服务
+  microsoft:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/microsoft.yaml
+    path: ./ruleset/microsoft.yaml
+    interval: 86400
+
+  # 游戏平台
+  steam:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/steam.yaml
+    path: ./ruleset/steam.yaml
+    interval: 86400
+
+  epicgames:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/epicgames.yaml
+    path: ./ruleset/epicgames.yaml
+    interval: 86400
+
+  ea:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/ea.yaml
+    path: ./ruleset/ea.yaml
+    interval: 86400
+
+  ubisoft:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/ubisoft.yaml
+    path: ./ruleset/ubisoft.yaml
+    interval: 86400
+
+  blizzard:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/blizzard.yaml
+    path: ./ruleset/blizzard.yaml
+    interval: 86400
+
++rules:
+
+  # 个人自定义
+  - RULE-SET,category-ai-chat-!cn,家宽
+  # 注意：Github也在这里哦！
+  - RULE-SET,microsoft,香港
+  - RULE-SET,steam,香港
+  - RULE-SET,epicgames,香港
+  - RULE-SET,ea,香港
+  - RULE-SET,ubisoft,香港
+  - RULE-SET,blizzard,香港
+
+# t
+  - DOMAIN-KEYWORD,dmm,日本
+  - DOMAIN-KEYWORD,liustar,emby-lx
+  - DOMAIN-KEYWORD,yezi.my,emby-yezi
+  - DOMAIN-KEYWORD,pcmhub,emby-pcm
+  - DOMAIN-KEYWORD,lemby,emby-lemby
+  - DOMAIN-KEYWORD,aikan,emby-aikan
+  - DOMAIN-KEYWORD,tionm,DIRECT
+  - DOMAIN-KEYWORD,175211,DIRECT
+  - DOMAIN-KEYWORD,nastt,DIRECT
+  - DOMAIN-SUFFIX,ait.lat,DIRECT
+  - DOMAIN-SUFFIX,139.com,DIRECT
+  - DOMAIN-SUFFIX,coalcloud.net,DIRECT
+  - DOMAIN-SUFFIX,ikuai8.com,DIRECT
+  - DOMAIN-SUFFIX,yxvm.com,DIRECT
+  - DOMAIN-SUFFIX,mhyidc.com,DIRECT
+  - DOMAIN-SUFFIX,alipan.com,DIRECT
+  - DOMAIN-SUFFIX,115.com,DIRECT
+  - DOMAIN-SUFFIX,52pojie.cn,DIRECT
+# t
