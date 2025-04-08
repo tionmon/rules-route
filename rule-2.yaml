@@ -1,0 +1,234 @@
+# port: 7890
+# socks-port: 7891
+# redir-port: 7892
+# tproxy-port: 7893
+mixed-port: 19098
+allow-lan: true
+bind-address: "*"
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:18848
+
+geodata-mode: true 
+geodata-loader: memconservative
+geo-auto-update: true
+geo-update-interval: 24
+geox-url:
+  geoip: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
+  mmdb: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb"
+  asn: "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb"
+dns:
+  enable: true
+  prefer-h3: false # DOH 优先使用 http/3
+  use-hosts: true # 是否回应配置中的 hosts，默认 true
+  use-system-hosts: false # 是否查询系统 hosts，默认 true
+  # listen: 0.0.0.0:53 # DNS 服务监听，仅支持 udp
+  ipv6: false
+  default-nameserver: # 默认 DNS, 用于解析 DNS 服务器 的域名，必须为 IP, 可为加密 DNS
+    - 1.2.4.8
+    - tls://223.5.5.5
+  enhanced-mode: fake-ip # or reder-host
+  fake-ip-range: 172.29.0.1/16 # Fake-IP 解析地址池
+  fake-ip-filter: # Fake-IP 过滤，列表中的域名返回真实 IP
+    - '+.local'
+    - '+.lan'
+    - '+.in-addr.arpa'
+    - 'injections.adguard.org'
+    - 'local.adguard.org'
+  respect-rules: false
+  # 配置查询域名使用的 DNS 服务器
+  nameserver-policy:
+    "+.lan,+.in-addr.arpa": system
+    # 广告拦截，效果有限，请使用浏览器扩展等更有效的手段
+    # 站长注意，会拦截 Google Analytics
+    # "geosite:category-ads-all": rcode://success
+    "rule-set:direct":
+      - tls://223.5.5.5
+      - tls://223.6.6.6
+      - 'https://223.5.5.5/dns-query#h3=true'
+      - 'https://223.6.6.6/dns-query#h3=true'
+    "geosite:private,onedrive,microsoft@cn,apple@cn,steam@cn,google@cn,jetbrains@cn,category-games@cn,cn":
+      - tls://223.5.5.5
+      - tls://223.6.6.6
+      - 'https://223.5.5.5/dns-query#h3=true'
+      - 'https://223.6.6.6/dns-query#h3=true'
+  proxy-server-nameserver:
+    - 'https://223.5.5.5/dns-query#h3=true'
+    - 'https://223.6.6.6/dns-query#h3=true'
+  nameserver:
+    # Google
+    - 'tls://8.8.8.8#🌏 国外访问'
+    - 'tls://8.8.4.4#🌏 国外访问'
+    - 'https://8.8.8.8/dns-query#🌏 国外访问&h3=true'
+    - 'https://8.8.4.4/dns-query#🌏 国外访问&h3=true'
+    # Cloudflare
+    - 'tls://1.1.1.1#🌏 国外访问'
+    - 'tls://1.0.0.1#🌏 国外访问'
+    - 'https://1.1.1.1/dns-query#🌏 国外访问&h3=true'
+    - 'https://1.0.0.1/dns-query#🌏 国外访问&h3=true'
+    # dns.sb
+    - 'tls://185.222.222.222#🌏 国外访问'
+    - 'tls://45.11.45.11#🌏 国外访问'
+    - 'https://185.222.222.222/dns-query#🌏 国外访问'
+    - 'https://45.11.45.11/dns-query#🌏 国外访问'
+
+proxies:
+
+proxy-groups:
+  - { name: "🎯 大陆直连", type: select, proxies: [DIRECT], url: "http://www.gstatic.com/generate_204", interval: 7200 }
+  - { name: "💬 AI 服务", type: select, proxies: [DIRECT], url: "http://www.gstatic.com/generate_204", interval: 7200 }
+  - { name: "🎮 游戏平台", type: select, proxies: [DIRECT], url: "http://www.gstatic.com/generate_204", interval: 7200 }
+  - { name: "Ⓜ️ 微软服务", type: select, proxies: [DIRECT], url: "http://www.gstatic.com/generate_204", interval: 7200 }
+  - { name: "🌏 国外访问", type: select, proxies: [DIRECT], url: "http://www.gstatic.com/generate_204", interval: 7200 }
+
+rules:
+
+  # 个人自定义
+  - RULE-SET,category-ai-chat-!cn,💬 AI 服务
+  # 注意：Github也在这里哦！
+  - RULE-SET,microsoft,Ⓜ️ 微软服务
+  - RULE-SET,steam,🎮 游戏平台
+  - RULE-SET,epicgames,🎮 游戏平台
+  - RULE-SET,ea,🎮 游戏平台
+  - RULE-SET,ubisoft,🎮 游戏平台
+  - RULE-SET,blizzard,🎮 游戏平台
+
+  # 规则集
+  - RULE-SET,reject,REJECT
+  - RULE-SET,proxy,🌏 国外访问
+  - RULE-SET,direct,🎯 大陆直连
+
+  # 广告过滤
+  - GEOSITE,category-ads-all,REJECT
+
+  # 直连，@cn 为该规则内的域名在中国大陆有接入点
+  - GEOSITE,private,🎯 大陆直连
+  - GEOSITE,onedrive,🎯 大陆直连
+  - GEOSITE,microsoft@cn,🎯 大陆直连
+  - GEOSITE,apple@cn,🎯 大陆直连
+  - GEOSITE,steam@cn,🎯 大陆直连
+  - GEOSITE,google@cn,🎯 大陆直连
+  - GEOSITE,jetbrains@cn,🎯 大陆直连
+  - GEOSITE,category-games@cn,🎯 大陆直连
+  # 流媒体
+  - GEOSITE,biliintl,🌏 国外访问
+  - GEOSITE,youtube,🌏 国外访问
+  - GEOSITE,netflix,🌏 国外访问
+  - GEOSITE,disney,🌏 国外访问
+  - GEOSITE,amazon,🌏 国外访问
+  - GEOSITE,disneyplus,🌏 国外访问
+  # 强制代理
+  - GEOSITE,google,🌏 国外访问
+  - GEOSITE,twitter,🌏 国外访问
+  - GEOSITE,pixiv,🌏 国外访问
+  - GEOSITE,category-scholar-!cn,🌏 国外访问
+  - GEOSITE,geolocation-!cn,🌏 国外访问
+
+  # 兜底强制直连
+  - GEOSITE,cn,🎯 大陆直连
+
+  # GEOIP 规则
+  - GEOIP,private,🎯 大陆直连
+  - GEOIP,telegram,🌏 国外访问
+  - GEOIP,JP,🌏 国外访问
+  - GEOIP,CN,🎯 大陆直连
+
+  # LAN
+  - IP-CIDR,127.0.0.0/8,DIRECT
+  - IP-CIDR,172.16.0.0/12,DIRECT
+  - IP-CIDR,192.168.0.0/16,DIRECT
+  - IP-CIDR,10.0.0.0/8,DIRECT
+  - IP-CIDR,17.0.0.0/8,DIRECT       # 组网地址
+  - IP-CIDR,100.64.0.0/10,DIRECT    # NAT 地址
+  - IP-CIDR,224.0.0.0/4,DIRECT      # 组播地址
+  - IP-CIDR6,fe80::/10,DIRECT       # IPv6 本地链路地址
+
+  # 漏网之鱼
+  - MATCH,🌏 国外访问
+
+rule-providers:
+  direct:
+    behavior: classical
+    type: inline
+    payload:
+      # CDN
+      - 'DOMAIN,download-cdn.jetbrains.com'
+      # Clash Dashboard & Converter
+      - 'DOMAIN,clash.razord.top'
+      - 'DOMAIN,yacd.haishan.me'
+      - 'DOMAIN,nexconvert.com'
+      # DDNS
+      - 'DOMAIN-SUFFIX,ip.sb'
+      # time
+      - 'DOMAIN,time.android.com'
+  proxy:
+    behavior: classical
+    type: inline
+    payload:
+      # 直连体验不佳，强制代理
+      - 'DOMAIN,dockerstatic.com'
+      - 'DOMAIN,fonts.googleapis.com'
+      - 'DOMAIN,fonts.gstatic.com'
+      - 'DOMAIN,www.gstatic.com'
+  reject:
+    behavior: classical
+    type: inline
+    payload:
+      # niconico 广告
+      - 'DOMAIN-SUFFIX,ads.nicovideo.jp'
+      # mumu 模拟器广告
+      - 'DOMAIN-SUFFIX,mumu.nie.netease.com'
+      # postman 更新
+      - 'DOMAIN-SUFFIX,dl.pstmn.io'
+      - 'DOMAIN-SUFFIX,sync-v3.getpostman.com'
+      - 'DOMAIN-SUFFIX,getpostman.com'
+
+  # AI 服务
+  category-ai-chat-!cn:
+    type: http
+    format: yaml # 可不填，默认为 yaml
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-ai-!cn.yaml
+    path: ./ruleset/category-ai-!cn.yaml
+    interval: 86400
+
+  # 微软服务
+  microsoft:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/microsoft.yaml
+    path: ./ruleset/microsoft.yaml
+    interval: 86400
+
+  # 游戏平台
+  steam:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/steam.yaml
+    path: ./ruleset/steam.yaml
+    interval: 86400
+  epicgames:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/epicgames.yaml
+    path: ./ruleset/epicgames.yaml
+    interval: 86400
+  ea:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/ea.yaml
+    path: ./ruleset/ea.yaml
+    interval: 86400
+  ubisoft:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/ubisoft.yaml
+    path: ./ruleset/ubisoft.yaml
+    interval: 86400
+  blizzard:
+    type: http
+    behavior: domain
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/blizzard.yaml
+    path: ./ruleset/blizzard.yaml
+    interval: 86400
